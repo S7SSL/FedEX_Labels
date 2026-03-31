@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>ByErim - FedEx Label Rotator</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<title>ByErim - FedEx Label Fixer</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -26,22 +25,26 @@ input[type=file]{display:none}
 .progress-bar{width:100%;max-width:500px;height:6px;background:#e0e0e0;border-radius:3px;margin-top:12px;overflow:hidden;display:none}
 .progress-bar .fill{height:100%;background:linear-gradient(90deg,#4d148c,#ff6200);width:0;transition:width .3s}
 .status{margin-top:10px;color:#666;font-size:.9rem}
+.tip{max-width:500px;margin-top:20px;padding:16px;background:#fff8e1;border-radius:8px;border:1px solid #ffe082;font-size:.85rem;color:#555}
+.tip b{color:#4d148c}
 </style>
 </head>
 <body>
-<h1>ByErim &mdash; FedEx Label Rotator</h1>
-<p class="subtitle">Fix FedEx labels for Zebra thermal printers (v2)</p>
+<h1>ByErim &mdash; FedEx Label Fixer</h1>
+<p class="subtitle">Fix FedEx labels for Zebra thermal printers (v3)</p>
 <div class="drop-zone" id="dropZone">
 <p>Drop FedEx label PDFs here</p>
 <small>or click to browse</small>
 </div>
 <input type="file" id="fileInput" accept=".pdf" multiple>
 <div class="file-list" id="fileList"></div>
-<button class="btn" id="processBtn" disabled>Rotate &amp; Download</button>
+<button class="btn" id="processBtn" disabled>Fix &amp; Download</button>
 <div class="progress-bar" id="progressBar"><div class="fill" id="progressFill"></div></div>
 <p class="status" id="status"></p>
+<div class="tip">
+<b>Print tip:</b> In Chrome print settings, set paper size to <b>97 x 148 mm</b>, Scale to <b>100%</b>, and Margins to <b>None</b>.
+</div>
 <script>
-pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 var dz=document.getElementById('dropZone'),fi=document.getElementById('fileInput'),fl=document.getElementById('fileList'),pb=document.getElementById('processBtn'),bar=document.getElementById('progressBar'),fill=document.getElementById('progressFill'),st=document.getElementById('status');
 var files=[];
 dz.onclick=function(){fi.click()};
@@ -58,42 +61,32 @@ pb.onclick=async function(){
     for(var i=0;i<files.length;i++){
       st.textContent='Processing '+(i+1)+' of '+files.length+': '+files[i].name;
       fill.style.width=((i/files.length)*100)+'%';
-      var result=await rotatePDF(files[i]);
+      var result=await fixPDF(files[i]);
       var blob=new Blob([result],{type:'application/pdf'});
       var url=URL.createObjectURL(blob);
       var a=document.createElement('a');a.href=url;
-      a.download=files[i].name.replace('.pdf','')+'_rotated.pdf';
+      a.download=files[i].name.replace('.pdf','')+'_fixed.pdf';
       a.click();URL.revokeObjectURL(url);
     }
-    fill.style.width='100%';st.textContent='Done! '+files.length+' label(s) processed.';
+    fill.style.width='100%';st.textContent='Done! '+files.length+' label(s) fixed.';
   }catch(err){st.textContent='Error: '+err.message;console.error(err)}
   pb.disabled=false;
 };
-async function rotatePDF(file){
+async function fixPDF(file){
   var ab=await file.arrayBuffer();
-  var pdf=await pdfjsLib.getDocument({data:new Uint8Array(ab)}).promise;
-  var newPdf=await PDFLib.PDFDocument.create();
-  for(var p=1;p<=pdf.numPages;p++){
-    var page=await pdf.getPage(p);
-    var vp=page.getViewport({scale:4});
-    var c1=document.createElement('canvas');
-    c1.width=vp.width;c1.height=vp.height;
-    await page.render({canvasContext:c1.getContext('2d'),viewport:vp}).promise;
-    var c2=document.createElement('canvas');
-    c2.width=vp.width;c2.height=vp.height;
-    var ctx2=c2.getContext('2d');
-    ctx2.translate(c2.width,c2.height);
-    ctx2.rotate(Math.PI);
-    ctx2.drawImage(c1,0,0);
-    var pngUrl=c2.toDataURL('image/png');
-    var pngB64=pngUrl.split(',')[1];
-    var pngBytes=Uint8Array.from(atob(pngB64),function(c){return c.charCodeAt(0)});
-    var img=await newPdf.embedPng(pngBytes);
-    var pw=vp.width/4,ph=vp.height/4;
-    var np=newPdf.addPage([pw,ph]);
-    np.drawImage(img,{x:0,y:0,width:pw,height:ph});
+  var srcDoc=await PDFLib.PDFDocument.load(ab);
+  var newDoc=await PDFLib.PDFDocument.create();
+  var pages=srcDoc.getPages();
+  /* 97mm x 148mm in points (1mm = 2.83465pt) */
+  var TW=97*2.83465,TH=148*2.83465;
+  for(var i=0;i<pages.length;i++){
+    var srcPage=pages[i];
+    srcPage.setRotation(PDFLib.degrees(0));
+    var embedded=(await newDoc.embedPages([srcPage]))[0];
+    var newPage=newDoc.addPage([TW,TH]);
+    newPage.drawPage(embedded,{x:0,y:0,width:TW,height:TH});
   }
-  return await newPdf.save();
+  return await newDoc.save();
 }
 </script>
 </body>
