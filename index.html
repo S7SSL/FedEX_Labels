@@ -6,67 +6,95 @@
 <title>ByErim - FedEx Label Rotator</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
-<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;background:#f5f5f5;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 20px}h1{font-size:24px;color:#333;margin-bottom:8px}.sub{color:#666;font-size:14px;margin-bottom:32px;text-align:center}.dz{width:100%;max-width:600px;border:2px dashed #ccc;border-radius:12px;padding:60px 40px;text-align:center;background:#fff;cursor:pointer;transition:all .2s}.dz:hover,.dz.over{border-color:#4d148c;background:#f9f5ff}.dz svg{width:48px;height:48px;margin-bottom:16px;color:#999}.dz p{color:#666;font-size:16px;margin-bottom:8px}.dz .h{color:#999;font-size:13px}input[type=file]{display:none}.fl{margin-top:24px;display:none;width:100%;max-width:600px}.fl.v{display:block}.fh{font-weight:600;font-size:15px;color:#333;margin-bottom:12px}.fi{background:#fff;border-radius:8px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 3px rgba(0,0,0,.06)}.fn{font-weight:500;color:#333;font-size:14px}.fz{color:#888;font-size:12px;margin-left:8px}.fs{font-size:12px;color:#999}.fs.d{color:#2e7d32}.fs.e{color:#d32f2f}.fr{background:none;border:none;color:#999;cursor:pointer;font-size:18px;padding:0 4px;margin-left:12px}.fr:hover{color:#d32f2f}.br{margin-top:24px;display:none;gap:12px;flex-wrap:wrap;justify-content:center}.br.v{display:flex}.btn{padding:12px 32px;background:#4d148c;color:#fff;border:none;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;transition:background .2s}.btn:hover{background:#3a0f6a}.btn:disabled{background:#ccc;cursor:not-allowed}.btn.s{background:#666}.btn.s:hover{background:#555}.st{margin-top:16px;font-size:14px;color:#4d148c;display:none;text-align:center}.st.v{display:block}.st.e{color:#d32f2f}.pb{margin-top:16px;display:none;width:100%;max-width:600px;height:6px;background:#e0e0e0;border-radius:3px;overflow:hidden}.pb.v{display:block}.pf{height:100%;background:#4d148c;border-radius:3px;transition:width .3s;width:0%}</style>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0f2f5;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px}
+h1{color:#4d148c;margin-bottom:4px;font-size:1.5rem}
+.subtitle{color:#666;margin-bottom:20px;font-size:.9rem}
+.drop-zone{width:100%;max-width:500px;border:3px dashed #4d148c;border-radius:12px;padding:40px 20px;text-align:center;background:#fff;cursor:pointer;transition:all .2s}
+.drop-zone.hover{background:#f3e8ff;border-color:#ff6200}
+.drop-zone p{color:#333;font-size:1.1rem;margin-bottom:8px}
+.drop-zone small{color:#888}
+input[type=file]{display:none}
+.file-list{width:100%;max-width:500px;margin-top:16px}
+.file-item{background:#fff;border-radius:8px;padding:12px 16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.file-item .name{color:#333;font-size:.95rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px}
+.file-item .remove{color:#e74c3c;cursor:pointer;font-weight:bold;padding:4px 8px;border:none;background:none;font-size:1.1rem}
+.btn{display:inline-block;margin-top:16px;padding:12px 32px;background:#4d148c;color:#fff;border:none;border-radius:8px;font-size:1rem;cursor:pointer;transition:background .2s}
+.btn:hover{background:#ff6200}
+.btn:disabled{background:#ccc;cursor:not-allowed}
+.progress-bar{width:100%;max-width:500px;height:6px;background:#e0e0e0;border-radius:3px;margin-top:12px;overflow:hidden;display:none}
+.progress-bar .fill{height:100%;background:linear-gradient(90deg,#4d148c,#ff6200);width:0;transition:width .3s}
+.status{margin-top:10px;color:#666;font-size:.9rem}
+</style>
 </head>
 <body>
-<h1>ByErim - FedEx Label Rotator</h1>
-<p class="sub">Physically rotates FedEx label PDFs to portrait for Zebra printers</p>
-<div class="dz" id="dz"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12l-3-3m0 0l-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg><p>Drop your FedEx label PDFs here</p><p class="h">or click to browse - select multiple</p></div>
-<input type="file" id="fi" accept=".pdf" multiple>
-<div class="fl" id="fl"><div class="fh" id="fh"></div><div id="fis"></div></div>
-<div class="pb" id="pb"><div class="pf" id="pf"></div></div>
-<div class="br" id="br"><button class="btn" id="rb">Rotate All and Download</button><button class="btn s" id="cb">Clear</button></div>
-<div class="st" id="st"></div>
+<h1>ByErim &mdash; FedEx Label Rotator</h1>
+<p class="subtitle">Fix FedEx labels for Zebra thermal printers (v2)</p>
+<div class="drop-zone" id="dropZone">
+<p>Drop FedEx label PDFs here</p>
+<small>or click to browse</small>
+</div>
+<input type="file" id="fileInput" accept=".pdf" multiple>
+<div class="file-list" id="fileList"></div>
+<button class="btn" id="processBtn" disabled>Rotate &amp; Download</button>
+<div class="progress-bar" id="progressBar"><div class="fill" id="progressFill"></div></div>
+<p class="status" id="status"></p>
 <script>
-pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-const{PDFDocument:PD}=PDFLib;
-const dz=document.getElementById("dz"),fi=document.getElementById("fi"),fl=document.getElementById("fl"),fh=document.getElementById("fh"),fis=document.getElementById("fis"),pb=document.getElementById("pb"),pf=document.getElementById("pf"),br=document.getElementById("br"),rb=document.getElementById("rb"),cb=document.getElementById("cb"),st=document.getElementById("st");
-let F=[];
-dz.onclick=()=>fi.click();
-dz.ondragover=e=>{e.preventDefault();dz.classList.add("over")};
-dz.ondragleave=()=>dz.classList.remove("over");
-dz.ondrop=e=>{e.preventDefault();dz.classList.remove("over");const d=[...e.dataTransfer.files].filter(f=>f.name.toLowerCase().endsWith(".pdf"));d.length&&af(d)};
-fi.onchange=e=>{const s=[...e.target.files];s.length&&af(s);fi.value=""};
-function af(n){F=F.concat(n);rl();fl.classList.add("v");br.classList.add("v");st.classList.remove("v");pb.classList.remove("v")}
-function rl(){fh.textContent=F.length+" label"+(F.length!==1?"s":"")+" ready";fis.innerHTML="";F.forEach((f,i)=>{const d=document.createElement("div");d.className="fi";d.innerHTML='<div><span class="fn">'+f.name+'</span><span class="fz">'+sz(f.size)+'</span></div><div style="display:flex;align-items:center"><span class="fs" id="s'+i+'"></span><button class="fr" data-i="'+i+'">&times;</button></div>';fis.appendChild(d)});document.querySelectorAll(".fr").forEach(b=>b.onclick=e=>{F.splice(+e.target.dataset.i,1);if(!F.length){fl.classList.remove("v");br.classList.remove("v")}rl()})}
-function sz(b){return b<1024?b+" B":b<1048576?(b/1024).toFixed(1)+" KB":(b/1048576).toFixed(1)+" MB"}
-cb.onclick=()=>{F=[];fl.classList.remove("v");br.classList.remove("v");st.classList.remove("v");pb.classList.remove("v");fis.innerHTML=""};
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+var dz=document.getElementById('dropZone'),fi=document.getElementById('fileInput'),fl=document.getElementById('fileList'),pb=document.getElementById('processBtn'),bar=document.getElementById('progressBar'),fill=document.getElementById('progressFill'),st=document.getElementById('status');
+var files=[];
+dz.onclick=function(){fi.click()};
+dz.ondragover=function(e){e.preventDefault();dz.classList.add('hover')};
+dz.ondragleave=function(){dz.classList.remove('hover')};
+dz.ondrop=function(e){e.preventDefault();dz.classList.remove('hover');addFiles(e.dataTransfer.files)};
+fi.onchange=function(e){addFiles(e.target.files)};
+function addFiles(nf){for(var i=0;i<nf.length;i++){var f=nf[i];if(f.type==='application/pdf')files.push(f)}renderList()}
+function renderList(){fl.innerHTML='';for(var i=0;i<files.length;i++){var d=document.createElement('div');d.className='file-item';d.innerHTML='<span class="name">'+files[i].name+'<\/span><button class="remove" onclick="removeFile('+i+')">&times;<\/button>';fl.appendChild(d)}pb.disabled=files.length===0}
+function removeFile(i){files.splice(i,1);renderList()}
+pb.onclick=async function(){
+  pb.disabled=true;bar.style.display='block';fill.style.width='0%';st.textContent='Processing...';
+  try{
+    for(var i=0;i<files.length;i++){
+      st.textContent='Processing '+(i+1)+' of '+files.length+': '+files[i].name;
+      fill.style.width=((i/files.length)*100)+'%';
+      var result=await rotatePDF(files[i]);
+      var blob=new Blob([result],{type:'application/pdf'});
+      var url=URL.createObjectURL(blob);
+      var a=document.createElement('a');a.href=url;
+      a.download=files[i].name.replace('.pdf','')+'_rotated.pdf';
+      a.click();URL.revokeObjectURL(url);
+    }
+    fill.style.width='100%';st.textContent='Done! '+files.length+' label(s) processed.';
+  }catch(err){st.textContent='Error: '+err.message;console.error(err)}
+  pb.disabled=false;
+};
 async function rotatePDF(file){
-  const ab=await file.arrayBuffer();
-  const pdf=await pdfjsLib.getDocument({data:new Uint8Array(ab)}).promise;
-  const newDoc=await PD.create();
-  for(let p=1;p<=pdf.numPages;p++){
-    const page=await pdf.getPage(p);
-    const DPI=300;
-    const scale=DPI/72;
-    const vp=page.getViewport({scale:scale});
-    const srcCanvas=document.createElement("canvas");
-    srcCanvas.width=vp.width;
-    srcCanvas.height=vp.height;
-    const srcCtx=srcCanvas.getContext("2d");
-    await page.render({canvasContext:srcCtx,viewport:vp}).promise;
-    const rotCanvas=document.createElement("canvas");
-    rotCanvas.width=vp.width;
-    rotCanvas.height=vp.height;
-    const rotCtx=rotCanvas.getContext("2d");
-    rotCtx.translate(rotCanvas.width/2,rotCanvas.height/2);
-    rotCtx.rotate(Math.PI);
-    rotCtx.drawImage(srcCanvas,-srcCanvas.width/2,-srcCanvas.height/2);
-    const imgData=rotCanvas.toDataURL("image/png");
-    const imgBytes=Uint8Array.from(atob(imgData.split(",")[1]),c=>c.charCodeAt(0));
-    const img=await newDoc.embedPng(imgBytes);
-    const pageW=vp.width/scale*72/72;
-    const pageH=vp.height/scale*72/72;
-    const pg=newDoc.addPage([pageW,pageH]);
-    pg.drawImage(img,{x:0,y:0,width:pageW,height:pageH});
+  var ab=await file.arrayBuffer();
+  var pdf=await pdfjsLib.getDocument({data:new Uint8Array(ab)}).promise;
+  var newPdf=await PDFLib.PDFDocument.create();
+  for(var p=1;p<=pdf.numPages;p++){
+    var page=await pdf.getPage(p);
+    var vp=page.getViewport({scale:4});
+    var c1=document.createElement('canvas');
+    c1.width=vp.width;c1.height=vp.height;
+    await page.render({canvasContext:c1.getContext('2d'),viewport:vp}).promise;
+    var c2=document.createElement('canvas');
+    c2.width=vp.width;c2.height=vp.height;
+    var ctx2=c2.getContext('2d');
+    ctx2.translate(c2.width,c2.height);
+    ctx2.rotate(Math.PI);
+    ctx2.drawImage(c1,0,0);
+    var pngUrl=c2.toDataURL('image/png');
+    var pngB64=pngUrl.split(',')[1];
+    var pngBytes=Uint8Array.from(atob(pngB64),function(c){return c.charCodeAt(0)});
+    var img=await newPdf.embedPng(pngBytes);
+    var pw=vp.width/4,ph=vp.height/4;
+    var np=newPdf.addPage([pw,ph]);
+    np.drawImage(img,{x:0,y:0,width:pw,height:ph});
   }
-  return await newDoc.save();
+  return await newPdf.save();
 }
-rb.onclick=async()=>{if(!F.length)return;rb.disabled=cb.disabled=true;let c=0,er=0;pb.classList.add("v");pf.style.width="0%";st.textContent="Rendering and rotating "+F.length+" label"+(F.length!==1?"s":"")+"...";st.classList.remove("e");st.classList.add("v");
-for(let i=0;i<F.length;i++){const f=F[i],el=document.getElementById("s"+i);el&&(el.textContent="Rendering...");
-try{const bytes=await rotatePDF(f);const blob=new Blob([bytes],{type:"application/pdf"});const u=URL.createObjectURL(blob);const a=document.createElement("a");a.href=u;a.download=f.name.replace(/\.pdf$/i,"_portrait.pdf");document.body.appendChild(a);a.click();a.remove();el&&(el.textContent="Done",el.className="fs d");c++}catch(x){console.error(x);el&&(el.textContent="Error: "+x.message,el.className="fs e");er++}
-pf.style.width=(100*(i+1)/F.length)+"%";if(i<F.length-1)await new Promise(r=>setTimeout(r,300))}
-st.textContent="Done! "+c+" label"+(c!==1?"s":"")+" rotated."+(er?" ("+er+" failed)":"");er&&st.classList.add("e");rb.disabled=cb.disabled=false};
 </script>
 </body>
 </html>
